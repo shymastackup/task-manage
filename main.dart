@@ -25,7 +25,12 @@ void main() async {
       print("14. View Project Details");
       print("15. Exit");
       stdout.write("Choose an option: ");
-      var choice = stdin.readLineSync();
+      
+      var choice = stdin.readLineSync()!;
+      while(choice.isEmpty){
+        stdout.write('Enter the number 1 to 15 options:');
+        choice = stdin.readLineSync()!;
+      }
 
       switch (choice) {
         case '1':
@@ -56,12 +61,21 @@ void main() async {
           break;
 
         case '2':
+       
+
           stdout.write("Enter project name to add task: ");
+         
           String projectName = stdin.readLineSync()!;
+          while(projectName.isEmpty){
+            stdout.write('ReEnter the Project: ');
+            projectName = stdin.readLineSync()!;
+          }
           stdout.write("Enter task title: ");
           String taskTitle = stdin.readLineSync()!;
+          
           stdout.write("Enter task description: ");
           String taskDescription = stdin.readLineSync()!;
+        
           stdout.write("Enter task deadline (YYYY-MM-DD): ");
           DateTime deadline;
           try {
@@ -85,6 +99,7 @@ void main() async {
         case '3':
           stdout.write("Enter project name to view tasks: ");
           String projectName = stdin.readLineSync()!;
+         
           projectManager.viewTasksOfProject(projectName);
           break;
 
