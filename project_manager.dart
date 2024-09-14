@@ -14,6 +14,8 @@ class ProjectManager {
         for (var json in projectsJson)
           Project.fromJson(json).id: Project.fromJson(json)
       };
+    } else {
+      print('No projects found. Starting with an empty list.');
     }
   }
 
@@ -21,6 +23,7 @@ class ProjectManager {
     final projectsJson =
         projects.values.map((project) => project.toJson()).toList();
     await datapersiatance.writeJsonFile({'projects': projectsJson});
+    print('Projects saved successfully.');
   }
 
   Project findProjectByName(String projectName) {
