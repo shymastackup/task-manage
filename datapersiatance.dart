@@ -1,7 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-
-class Datapersiatance {
+ import 'dart:convert';
+ import 'dart:io';
+ class Datapersiatance {
   final String filePath;
 
   Datapersiatance(this.filePath);
@@ -33,6 +32,6 @@ class Datapersiatance {
       await file.writeAsString(contents);
     } catch (e) {
       print("Error writing JSON file: $e");
-    }
-  }
-}
+     }
+   }
+ }
