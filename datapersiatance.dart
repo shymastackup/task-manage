@@ -2,56 +2,36 @@ import 'dart:convert';
 import 'dart:io';
 
 class Datapersiatance {
-  final String filePath;
-
-  Datapersiatance(this.filePath);
-
-
-  Future<void> writeJsonFile(Map<String, dynamic> data) async {
+  Future<Map> readJsonFile(String fileName) async {
     try {
-      final file = File(filePath);
+      final file = File(fileName);
+      if (await file.exists()) {
+        final contents = await file.readAsString();
+        final jsonData = jsonDecode(contents);
 
-      final contents = jsonEncode(data);
-
-      await file.writeAsString(contents, flush: true);
-      print("Data saved successfully to $filePath.");
+        if (jsonData is List) {
+          return {'projects': jsonData};
+        } else if (jsonData is Map) {
+          return jsonData;
+        } else {
+          return {};
+        }
+      } else {
+        return {};
+      }
     } catch (e) {
-      print("Error writing JSON file: $e");
+      print('Error reading JSON file: $e');
+      return {};
     }
   }
 
-  Future<Map<String, dynamic>> readJsonFile() async {
+  Future<void> writeJsonFile(String fileName, Map<String, dynamic> data) async {
     try {
-      final file = File(filePath);
-
-      if (!await file.exists()) {
-        print("File not found, creating a new one.");
-        await file.writeAsString('{}');
-        return {};
-      }
-
-      final contents = await file.readAsString();
-
-      if (contents.isEmpty) {
-        return {};
-      }
-
-      final jsonData = jsonDecode(contents);
-
-      if (jsonData is List) {
-        print("JSON data is a list. Converting to a map.");
-        return {'projects': jsonData};
-      }
-
-      if (jsonData is Map<String, dynamic>) {
-        return jsonData;
-      }
-
-      print("Unexpected JSON format.");
-      return {};
+      final file = File(fileName);
+      final contents = jsonEncode(data);
+      await file.writeAsString(contents);
     } catch (e) {
-      print("Error reading JSON file: $e");
-      return {};
+      print('Error writing JSON file: $e');
     }
   }
 }

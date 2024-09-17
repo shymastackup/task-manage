@@ -4,25 +4,33 @@ import 'task.dart';
 
 class ProjectManager {
   Map<String, Project> projects = {};
-  final Datapersiatance datapersiatance = Datapersiatance('projects.json');
+  final Datapersiatance datapersiatance;
+
+  ProjectManager(this.datapersiatance);
 
   Future<void> loadProjectsFromFile() async {
-    final data = await datapersiatance.readJsonFile();
-    if (data.isNotEmpty) {
-      List<dynamic> projectsJson = data['projects'] ?? [];
-      projects = {
-        for (var json in projectsJson)
-          Project.fromJson(json).id: Project.fromJson(json)
-      };
-    } else {
-      print('No projects found. Starting with an empty list.');
+    try {
+      final data = await datapersiatance.readJsonFile('projects.json');
+      if (data.isNotEmpty) {
+        List<dynamic> projectsJson = data['projects'] ?? [];
+        projects = {
+          for (var json in projectsJson)
+            Project.fromJson(json).id: Project.fromJson(json)
+        };
+      } else {
+        print('No projects found. Starting with an empty list.');
+      }
+    } catch (e) {
+      print('Error reading JSON file: $e');
+      print('Starting with an empty list.');
     }
   }
 
   Future<void> saveProjectsToFile() async {
     final projectsJson =
         projects.values.map((project) => project.toJson()).toList();
-    await datapersiatance.writeJsonFile({'projects': projectsJson});
+    await datapersiatance
+        .writeJsonFile('projects.json', {'projects': projectsJson});
     print('Projects saved successfully.');
   }
 
