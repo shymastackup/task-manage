@@ -1,37 +1,37 @@
-import 'dart:convert';
-import 'dart:io';
+ import 'dart:convert';
+ import 'dart:io';
+ class Datapersiatance {
+  final String filePath;
 
-class Datapersiatance {
-  Future<Map> readJsonFile(String fileName) async {
+  Datapersiatance(this.filePath);
+
+  Future<void> saveProjectsToFile(Map<String, dynamic> projects) async {
     try {
-      final file = File(fileName);
-      if (await file.exists()) {
-        final contents = await file.readAsString();
-        final jsonData = jsonDecode(contents);
+      final file = File(filePath);
+   
+      String jsonString = jsonEncode(projects);
+      await file.writeAsString(jsonString);
+      print("Data saved successfully to $filePath.");
+    } catch (e) {
+      print("Error while saving data to $filePath: $e");
+    }
+  }
 
-        if (jsonData is List) {
-          return {'projects': jsonData};
-        } else if (jsonData is Map) {
-          return jsonData;
-        } else {
-          return {};
-        }
+  Future<Map<String, dynamic>> loadProjectsFromFile() async {
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+   
+        String jsonString = await file.readAsString();
+      
+        return jsonDecode(jsonString);
       } else {
+        print("No data file found, returning an empty project list.");
         return {};
       }
     } catch (e) {
-      print('Error reading JSON file: $e');
+      print("Error while loading data from $filePath: $e");
       return {};
     }
   }
-
-  Future<void> writeJsonFile(String fileName, Map<String, dynamic> data) async {
-    try {
-      final file = File(fileName);
-      final contents = jsonEncode(data);
-      await file.writeAsString(contents);
-    } catch (e) {
-      print('Error writing JSON file: $e');
-    }
-  }
-}
+ }
