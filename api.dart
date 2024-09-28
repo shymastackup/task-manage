@@ -5,22 +5,7 @@ class Api {
   static final String apiUrl =
       'https://crudcrud.com/api/166ea4f7ab484ac89a1bfb65377c0bba';
 
-  //  projects from an API________________________________________>
-  // static Future<Map<String, dynamic>> getProjects() async {
-  //   try {
-  //     final file = File('projects.json');
 
-  //     if (await file.exists()) {
-  //       String data = await file.readAsString();
-  //       return jsonDecode(data);
-  //     } else {
-  //       return {};
-  //     }
-  //   } catch (e) {
-  //     print('Error: Unable to load projects from API. Reason: $e');
-  //     return {};
-  //   }
-  // }
   static Future<Map<String, dynamic>> getProjects() async {
   try {
     final file = File('projects.json');
@@ -30,12 +15,12 @@ class Api {
       final decodedData = jsonDecode(data);
 
       if (decodedData is Map<String, dynamic>) {
-        return decodedData;  // Expected case, return the Map.
+        return decodedData; 
       } else if (decodedData is List) {
-        // If the decoded data is a List, wrap it in a map under 'projects'.
+      
         return {'projects': decodedData};
       } else {
-        // Unexpected structure, return an empty map.
+      
         return {};
       }
     } else {
