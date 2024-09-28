@@ -1,4 +1,5 @@
 class Task {
+  int id;
   String title;
   String description;
   DateTime deadline;
@@ -7,6 +8,7 @@ class Task {
   bool isCompleted = false;
 
   Task({
+    required this.id,
     required this.title,
     required this.description,
     required this.deadline,
@@ -24,6 +26,7 @@ class Task {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'title': title,
       'description': description,
       'deadline': deadline.toIso8601String(),
@@ -35,6 +38,7 @@ class Task {
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
+      id: json['id'],
       title: json['title'],
       description: json['description'],
       deadline: DateTime.parse(json['deadline']),
@@ -46,5 +50,3 @@ class Task {
       ..isCompleted = json['isCompleted'];
   }
 }
-
-

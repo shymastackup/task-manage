@@ -1,221 +1,185 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class Api {
-  static const String baseUrl =
-      'https://crudcrud.com/api/933a808629a2488d8a918ad945233461https://crudcrud.com/api/933a808629a2488d8a918ad945233461';
+  static final String apiUrl =
+      'https://crudcrud.com/api/166ea4f7ab484ac89a1bfb65377c0bba';
 
-  // Projects-------------------------------------------------------------------------->
-  static Future<Map<String, dynamic>?> getProjects() async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/projects'));
+  //  projects from an API________________________________________>
+  // static Future<Map<String, dynamic>> getProjects() async {
+  //   try {
+  //     final file = File('projects.json');
 
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        print(
-            'Error: Failed to load projects. Status Code: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      print('Error: Unable to load projects. Exception: $e');
-      return null;
-    }
-  }
-
-  static Future<void> updateProject(
-      String projectId, Map<String, dynamic> projectData) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/projects/$projectId'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(projectData),
-      );
-
-      if (response.statusCode == 200) {
-        print('Project updated successfully.');
-      } else {
-        print(
-            'Error: Failed to update project. Status Code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: Unable to update project. Exception: $e');
-    }
-  }
-static Future<void> saveProjects(Map<String, dynamic> newProject) async {
+  //     if (await file.exists()) {
+  //       String data = await file.readAsString();
+  //       return jsonDecode(data);
+  //     } else {
+  //       return {};
+  //     }
+  //   } catch (e) {
+  //     print('Error: Unable to load projects from API. Reason: $e');
+  //     return {};
+  //   }
+  // }
+  static Future<Map<String, dynamic>> getProjects() async {
   try {
-    final existingProjects = await getProjects();
-    bool isDuplicate = false;
+    final file = File('projects.json');
+    
+    if (await file.exists()) {
+      String data = await file.readAsString();
+      final decodedData = jsonDecode(data);
 
-    if (existingProjects != null) {
-      for (var project in existingProjects['projects'] ?? []) {
-        if (project['name'] == newProject['name']) { 
-          isDuplicate = true;
-          break;
-        }
-      }
-    }
-
-    if (!isDuplicate) {
-      
-      final response = await http.post(
-        Uri.parse('$baseUrl/projects'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(newProject),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Project saved successfully.');
+      if (decodedData is Map<String, dynamic>) {
+        return decodedData;  // Expected case, return the Map.
+      } else if (decodedData is List) {
+        // If the decoded data is a List, wrap it in a map under 'projects'.
+        return {'projects': decodedData};
       } else {
-        print('Error: Failed to save project. Status Code: ${response.statusCode}');
+        // Unexpected structure, return an empty map.
+        return {};
       }
     } else {
-      print('Error: Project already exists.');
+      return {};
     }
   } catch (e) {
-    print('Error: Unable to save project. Exception: $e');
+    print('Error: Unable to load projects. Reason: $e');
+    return {};
   }
 }
 
 
+
+  static Future<void> saveProjects(Map<String, dynamic> projectsData) async {
+    try {
+      final file = File('projects.json');
+      await file.writeAsString(jsonEncode(projectsData));
+      print('Projects saved successfully to API.');
+    } catch (e) {
+      print('Error: Unable to save projects to API. Reason: $e');
+    }
+  }
+
+  static Future<void> updateProject(
+      String projectId, Map<String, dynamic> updatedData) async {
+    try {
+      final projects = await getProjects();
+      List<dynamic> projectsList = projects['projects'] ?? [];
+
+      for (var project in projectsList) {
+        if (project['id'] == projectId) {
+          project['name'] = updatedData['name'];
+          project['description'] = updatedData['description'];
+          project['startDate'] = updatedData['startDate'];
+
+          break;
+        }
+      }
+
+      await saveProjects({'projects': projectsList});
+      print('Project updated successfully.');
+    } catch (e) {
+      print('Error: Unable to update project. Reason: $e');
+    }
+  }
+
   static Future<void> deleteProject(String projectId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/projects/$projectId'),
-      );
+      final projects = await getProjects();
+      List<dynamic> projectsList = projects['projects'] ?? [];
 
-      if (response.statusCode == 200) {
-        print('Project deleted successfully.');
+      projectsList.removeWhere((project) => project['id'] == projectId);
+
+      await saveProjects({'projects': projectsList});
+      print('Project deleted successfully.');
+    } catch (e) {
+      print('Error: Unable to delete project. Reason: $e');
+    }
+  }
+////task__________________________________________________________>
+  static Future<Map<String, dynamic>> getTasks() async {
+    try {
+      final file = File('tasks.json');
+
+      if (await file.exists()) {
+        String data = await file.readAsString();
+        return jsonDecode(data);
       } else {
-        print(
-            'Error: Failed to delete project. Status Code: ${response.statusCode}');
+        return {};
       }
     } catch (e) {
-      print('Error: Unable to delete project. Exception: $e');
+      print('Error: Unable to load tasks from API. Reason: $e');
+      return {};
     }
   }
 
-  // Tasks_----------------------------------------------------------------------------------->
-  static Future<List<Map<String, dynamic>>?> getTasks() async {
+  static Future<void> saveTasks(Map<String, dynamic> tasksData) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/tasks'));
-
-      if (response.statusCode == 200) {
-        List tasks = jsonDecode(response.body);
-
-        final uniqueTasks = tasks.toSet().toList();
-
-        return uniqueTasks.cast<Map<String, dynamic>>();
-      } else {
-        print(
-            'Error: Failed to load tasks. Status Code: ${response.statusCode}');
-        return null;
-      }
+      final file = File('tasks.json');
+      await file.writeAsString(jsonEncode(tasksData));
+      print('Tasks saved successfully to API.');
     } catch (e) {
-      print('Error: Unable to load tasks. Exception: $e');
-      return null;
+      print('Error: Unable to save tasks to API. Reason: $e');
     }
   }
 
-  static Future<void> saveTasks(Map<String, dynamic> newTask) async {
+  static Future<void> createTask(Map<String, dynamic> taskData) async {
     try {
-      final existingTasks = await getTasks();
-      bool isDuplicate = false;
+      final tasks = await getTasks();
+      List<dynamic> tasksList = tasks['tasks'] ?? [];
 
-      if (existingTasks != null) {
-        for (var task in existingTasks) {
-          if (task['name'] == newTask['name']) {
-            isDuplicate = true;
-            break;
-          }
+      tasksList.add(taskData); 
+      await saveTasks({'tasks': tasksList});
+
+      print('Task created successfully.');
+    } catch (e) {
+      print('Error: Unable to create task. Reason: $e');
+    }
+  }
+
+  static Future<List<dynamic>> readTasks() async {
+    try {
+      final tasks = await getTasks();
+      return tasks['tasks'] ?? [];
+    } catch (e) {
+      print('Error: Unable to read tasks. Reason: $e');
+      return [];
+    }
+  }
+
+  static Future<void> updateTask(
+      String taskId, Map<String, dynamic> updatedData) async {
+    try {
+      final tasks = await getTasks();
+      List<dynamic> tasksList = tasks['tasks'] ?? [];
+
+      for (var task in tasksList) {
+        if (task['id'] == taskId) {
+          task['title'] = updatedData['title'];
+          task['description'] = updatedData['description'];
+          task['dueDate'] = updatedData['dueDate'];
+
+          break;
         }
       }
 
-      if (!isDuplicate) {
-        final response = await http.post(
-          Uri.parse('$baseUrl/tasks'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(newTask),
-        );
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          print('Task saved successfully.');
-        } else {
-          print(
-              'Error: Failed to save task. Status Code: ${response.statusCode}');
-        }
-      } else {
-        print('Error: Task already exists.');
-      }
+      await saveTasks({'tasks': tasksList});
+      print('Task updated successfully.');
     } catch (e) {
-      print('Error: Unable to save task. Exception: $e');
-    }
-  }
-
-  static Future<void> updateTasks(
-      String taskId, Map<String, dynamic> tasks) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/tasks/$taskId'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(tasks),
-      );
-
-      if (response.statusCode == 200) {
-        print('Tasks updated successfully.');
-      } else {
-        print(
-            'Error: Failed to update tasks. Status Code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: Unable to update tasks. Exception: $e');
-    }
-  }
-
-  static Future<void> postTasks(Map<String, dynamic> taskData) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/tasks'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(taskData),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Task created successfully.');
-      } else {
-        print(
-            'Error: Failed to create task. Status Code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: Unable to create task. Exception: $e');
+      print('Error: Unable to update task. Reason: $e');
     }
   }
 
   static Future<void> deleteTask(String taskId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/tasks/$taskId'),
-      );
+      final tasks = await getTasks();
+      List<dynamic> tasksList = tasks['tasks'] ?? [];
 
-      if (response.statusCode == 200) {
-        print('Task deleted successfully.');
-      } else {
-        print(
-            'Error: Failed to delete task. Status Code: ${response.statusCode}');
-      }
+      tasksList.removeWhere((task) => task['id'] == taskId);
+
+      await saveTasks({'tasks': tasksList});
+      print('Task deleted successfully.');
     } catch (e) {
-      print('Error: Unable to delete task. Exception: $e');
+      print('Error: Unable to delete task. Reason: $e');
     }
   }
 }

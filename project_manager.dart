@@ -14,7 +14,7 @@ class ProjectManager {
     final data = await Api.getProjects();
     print('API Response: $data'); 
 
-    if (data != null && data.isNotEmpty) {
+    if (data.isNotEmpty) {
      
       List<dynamic> projectsJson = jsonDecode(data['projects'] as String) as List<dynamic>;
 

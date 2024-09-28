@@ -4,7 +4,7 @@ import 'task.dart';
 
 void main() async {
   final projectManager = ProjectManager();
-  // await projectManager.loadProjectsFromFile();
+  await projectManager.loadProjectsFromApi();
 
   while (true) {
     try {
@@ -23,8 +23,7 @@ void main() async {
       print("12. View Pending Tasks in a Project");
       print("13. Extend Task Deadline");
       print("14. View Project Details");
-
-      print("15.save project");
+      print("15. Save Project");
       print("16. Exit");
       stdout.write("Choose an option: ");
 
@@ -39,14 +38,14 @@ void main() async {
           stdout.write("Enter project name: ");
           String name = stdin.readLineSync()!;
           while (name.isEmpty) {
-            stdout.write('ReEnter project name: ');
+            stdout.write('Re-enter project name: ');
             name = stdin.readLineSync()!;
           }
 
           stdout.write("Enter project description: ");
           String description = stdin.readLineSync()!;
           while (description.isEmpty) {
-            stdout.write('ReEnter description: ');
+            stdout.write('Re-enter description: ');
             description = stdin.readLineSync()!;
           }
 
@@ -82,17 +81,37 @@ void main() async {
             projectName = stdin.readLineSync()!;
           }
 
+          stdout.write("Enter task ID: ");
+          String? taskIdInput = stdin.readLineSync();
+          int taskId;
+          while (true) {
+            if (taskIdInput != null && taskIdInput.isNotEmpty) {
+              try {
+                taskId = int.parse(taskIdInput);
+                break;
+              } catch (e) {
+                stdout.write(
+                    'Invalid ID. Please enter a valid integer task ID: ');
+                taskIdInput = stdin.readLineSync();
+              }
+            } else {
+              stdout.write(
+                  'Task ID cannot be empty. Please enter a valid task ID: ');
+              taskIdInput = stdin.readLineSync();
+            }
+          }
+
           stdout.write("Enter task title: ");
           String taskTitle = stdin.readLineSync()!;
           while (taskTitle.isEmpty) {
-            stdout.write(' Re-enter task title: ');
+            stdout.write('Re-enter task title: ');
             taskTitle = stdin.readLineSync()!;
           }
 
           stdout.write("Enter task description: ");
           String taskDescription = stdin.readLineSync()!;
           while (taskDescription.isEmpty) {
-            stdout.write(' Re-enter task description: ');
+            stdout.write('Re-enter task description: ');
             taskDescription = stdin.readLineSync()!;
           }
 
@@ -109,6 +128,7 @@ void main() async {
           }
 
           Task newTask = Task(
+            id: taskId,
             title: taskTitle,
             description: taskDescription,
             deadline: deadline,
@@ -128,7 +148,7 @@ void main() async {
           String projectName = stdin.readLineSync()!;
 
           while (projectName.isEmpty) {
-            stdout.write(' Re-enter project name: ');
+            stdout.write('Re-enter project name: ');
             projectName = stdin.readLineSync()!;
           }
 
@@ -144,14 +164,14 @@ void main() async {
           stdout.write("Enter project name to start task: ");
           String projectName = stdin.readLineSync()!;
           while (projectName.isEmpty) {
-            stdout.write(' Re-enter project name: ');
+            stdout.write('Re-enter project name: ');
             projectName = stdin.readLineSync()!;
           }
 
           stdout.write("Enter task title to start: ");
           String taskTitle = stdin.readLineSync()!;
           while (taskTitle.isEmpty) {
-            stdout.write(' Re-enter task title: ');
+            stdout.write('Re-enter task title: ');
             taskTitle = stdin.readLineSync()!;
           }
 
@@ -169,7 +189,7 @@ void main() async {
           stdout.write("Enter project name to complete task: ");
           String projectName = stdin.readLineSync()!;
           while (projectName.isEmpty) {
-            stdout.write('Re-Enter the project Name');
+            stdout.write('Re-enter the project Name');
             projectName = stdin.readLineSync()!;
           }
 
@@ -219,7 +239,7 @@ void main() async {
           stdout.write("Enter new task description: ");
           String newDescription = stdin.readLineSync()!;
           while (newDescription.isEmpty) {
-            stdout.write(' Re-enter the new task description: ');
+            stdout.write('Re-enter the new task description: ');
             newDescription = stdin.readLineSync()!;
           }
 
@@ -228,7 +248,7 @@ void main() async {
             stdout.write("Enter new task deadline (YYYY-MM-DD): ");
             String? deadlineInput = stdin.readLineSync();
             if (deadlineInput == null || deadlineInput.isEmpty) {
-              print(' Please enter a valid deadline.');
+              print('Please enter a valid deadline.');
               continue;
             }
             try {
@@ -248,6 +268,7 @@ void main() async {
                 "Error: Unable to update task '$taskTitle' in project '$projectName'. Reason: $e");
           }
           break;
+
         case '7':
           stdout.write("Enter project name to delete task: ");
           String projectName = stdin.readLineSync()!;
@@ -273,11 +294,13 @@ void main() async {
                 "Error: Unable to delete task '$taskTitle' from project '$projectName'. Reason: $e");
           }
           break;
+
         case '8':
           stdout.write("Enter project name to delete: ");
           String projectName = stdin.readLineSync()!;
           while (projectName.isEmpty) {
-            stdout.write('Re-enter the project name: ');
+            stdout.write(
+                'Project name cannot be empty. Re-enter the project name: ');
             projectName = stdin.readLineSync()!;
           }
 
@@ -295,27 +318,27 @@ void main() async {
 
         case '10':
           stdout.write("Enter project name to search: ");
-          String searchName = stdin.readLineSync()!;
-
-          while (searchName.isEmpty) {
+          String projectName = stdin.readLineSync()!;
+          while (projectName.isEmpty) {
             stdout.write(
                 'Project name cannot be empty. Re-enter the project name: ');
-            searchName = stdin.readLineSync()!;
+            projectName = stdin.readLineSync()!;
           }
 
           try {
-            projectManager.searchProjectByName(searchName);
+            projectManager.searchProjectByName(projectName);
           } catch (e) {
-            print("Error: Project '$searchName' not found.");
+            print(
+                "Error: Unable to search for project '$projectName'. Reason: $e");
           }
           break;
 
         case '11':
           stdout.write("Enter project name to view completed tasks: ");
           String projectName = stdin.readLineSync()!;
-
           while (projectName.isEmpty) {
-            stdout.write(' Re-enter the project name: ');
+            stdout.write(
+                'Project name cannot be empty. Re-enter the project name: ');
             projectName = stdin.readLineSync()!;
           }
 
@@ -330,86 +353,90 @@ void main() async {
         case '12':
           stdout.write("Enter project name to view pending tasks: ");
           String projectName = stdin.readLineSync()!;
-
-          while (projectName.isEmpty) {
-            stdout.write('Re-Enter the Project Name:');
-            projectName = stdin.readLineSync()!;
-          }
-          try {
-            projectManager.viewPendingTasks(projectName);
-          } catch (e) {
-            print(
-                "Error:Unable to view pending task for project '$projectName.Reason:$e ");
-          }
-          break;
-
-        case '13':
-          stdout.write("Enter project name: ");
-          String projectName = stdin.readLineSync()!;
-
-          while (projectName.isEmpty) {
-            stdout.write('Re-enter the project name: ');
-            projectName = stdin.readLineSync()!;
-          }
-
-          stdout.write("Enter task title to extend deadline: ");
-          String taskTitle = stdin.readLineSync()!;
-
-          while (taskTitle.isEmpty) {
-            stdout.write(' Re-enter the task title: ');
-            taskTitle = stdin.readLineSync()!;
-          }
-
-          DateTime? newDeadline;
-          while (newDeadline == null) {
-            stdout.write("Enter new task deadline (YYYY-MM-DD): ");
-            String? input = stdin.readLineSync();
-            if (input != null && input.isNotEmpty) {
-              try {
-                newDeadline = DateTime.parse(input);
-              } catch (e) {
-                print("Invalid date format. Please use YYYY-MM-DD.");
-              }
-            } else {
-              print("Input cannot be empty. Please enter a valid date.");
-            }
-          }
-          projectManager.extendTaskDeadline(
-              projectName, taskTitle, newDeadline);
-          print("Task deadline extended.");
-          break;
-
-        case '14':
-          stdout.write("Enter project name to view details: ");
-          String projectName = stdin.readLineSync()!;
-
           while (projectName.isEmpty) {
             stdout.write(
                 'Project name cannot be empty. Re-enter the project name: ');
             projectName = stdin.readLineSync()!;
           }
 
-          projectManager.viewProjectDetails(projectName);
-          break;
-          case '15':
-           try {
-            await projectManager.saveProjectsToApi();
-            print("Projects saved successfully.");
+          try {
+            projectManager.viewPendingTasks(projectName);
           } catch (e) {
-            print("Error: Unable to save projects. Reason: $e");
+            print(
+                "Error: Unable to view pending tasks for project '$projectName'. Reason: $e");
           }
           break;
 
+        case '13':
+          stdout.write("Enter project name to extend deadline: ");
+          String projectName = stdin.readLineSync()!;
+          while (projectName.isEmpty) {
+            stdout.write(
+                'Project name cannot be empty. Re-enter the project name: ');
+            projectName = stdin.readLineSync()!;
+          }
+
+          stdout.write("Enter task title to extend deadline: ");
+          String taskTitle = stdin.readLineSync()!;
+          while (taskTitle.isEmpty) {
+            stdout
+                .write('Task title cannot be empty. Re-enter the task title: ');
+            taskTitle = stdin.readLineSync()!;
+          }
+
+          DateTime? newDeadline;
+          while (newDeadline == null) {
+            stdout.write("Enter new task deadline (YYYY-MM-DD): ");
+            String input = stdin.readLineSync()!;
+            try {
+              newDeadline = DateTime.parse(input);
+            } catch (e) {
+              print("Invalid date format. Please use YYYY-MM-DD.");
+            }
+          }
+
+          try {
+            projectManager.extendTaskDeadline(
+                projectName, taskTitle, newDeadline);
+            print(
+                "Deadline extended successfully for task '$taskTitle' in project '$projectName'.");
+          } catch (e) {
+            print(
+                "Error: Unable to extend deadline for task '$taskTitle' in project '$projectName'. Reason: $e");
+          }
+          break;
+
+        case '14':
+          stdout.write("Enter project name to view details: ");
+          String projectName = stdin.readLineSync()!;
+          while (projectName.isEmpty) {
+            stdout.write(
+                'Project name cannot be empty. Re-enter the project name: ');
+            projectName = stdin.readLineSync()!;
+          }
+
+          try {
+            projectManager.viewProjectDetails(projectName);
+          } catch (e) {
+            print(
+                "Error: Unable to view details for project '$projectName'. Reason: $e");
+          }
+          break;
+
+        case '15':
+          await projectManager.saveProjectsToApi();
+          print("Projects saved successfully.");
+          break;
+
         case '16':
-          exit(0);
-
-
+          print("Exiting...");
+          return;
 
         default:
-          print("Invalid option. Please try again.");
+          print("Invalid option. Please choose a valid option.");
       }
     } catch (e) {
-      print("An error occurred: $e. Please try again.");
+      print("An error occurred: $e");
     }
   }
 }
