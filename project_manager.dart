@@ -1,29 +1,48 @@
-import 'datapersiatance.dart';
+import 'dart:convert';
+
+import 'api.dart';
 import 'project.dart';
 import 'task.dart';
 
 class ProjectManager {
   Map<String, Project> projects = {};
-  final Datapersiatance datapersiatance = Datapersiatance('projects.json');
+  
+  
 
-  Future<void> loadProjectsFromFile() async {
-    final data = await datapersiatance.loadProjectsFromFile();
-    if (data.isNotEmpty) {
-      List<dynamic> projectsJson = data['projects'] ?? [];
+ Future<void> loadProjectsFromApi() async {
+  try {
+    final data = await Api.getProjects();
+    print('API Response: $data'); 
+
+    if (data != null && data.isNotEmpty) {
+     
+      List<dynamic> projectsJson = jsonDecode(data['projects'] as String) as List<dynamic>;
+
       projects = {
         for (var json in projectsJson)
-          Project.fromJson(json).id: Project.fromJson(json)
+          Project.fromJson(json).id: Project.fromJson(json) 
       };
     } else {
       print('No projects found. Starting with an empty list.');
     }
+  } catch (e) {
+    print('Error: Unable to load projects. Reason: $e');
   }
+}
 
-  Future<void> saveProjectsToFile() async {
-    final projectsJson =
-        projects.values.map((project) => project.toJson()).toList();
-    await datapersiatance.saveProjectsToFile({'projects': projectsJson});
-    print('Projects saved successfully.');
+
+
+
+
+  Future<void> saveProjectsToApi() async {
+    try {
+      final projectsJson =
+          projects.values.map((project) => project.toJson()).toList();
+      await Api.saveProjects({'projects': projectsJson});
+      print('Projects saved successfully.');
+    } catch (e) {
+      print('Error: Unable to save projects. Reason: $e');
+    }
   }
 
   Project findProjectByName(String projectName) {
@@ -49,14 +68,14 @@ class ProjectManager {
       startDate: startDate,
     );
     projects[project.id] = project;
-    saveProjectsToFile();
+    saveProjectsToApi();
     print("Project '$name' created successfully.");
   }
 
   void addTaskToProject(String projectName, Task task) {
     final project = findProjectByName(projectName);
     project.tasks.add(task);
-    saveProjectsToFile();
+    saveProjectsToApi();
     print("Task '${task.title}' added to project '$projectName'.");
   }
 
@@ -78,7 +97,7 @@ class ProjectManager {
     final project = findProjectByName(projectName);
     final task = findTaskInProject(project, taskTitle);
     task.startTask();
-    saveProjectsToFile();
+    saveProjectsToApi();
     print("Task '$taskTitle' started at ${task.startTime}.");
   }
 
@@ -86,7 +105,7 @@ class ProjectManager {
     final project = findProjectByName(projectName);
     final task = findTaskInProject(project, taskTitle);
     task.completeTask();
-    saveProjectsToFile();
+    saveProjectsToApi();
     print("Task '$taskTitle' completed at ${task.endTime}.");
   }
 
@@ -98,14 +117,14 @@ class ProjectManager {
     task.title = newTitle;
     task.description = newDescription;
     task.deadline = newDeadline;
-    saveProjectsToFile();
+    saveProjectsToApi();
     print("Task '$taskTitle' updated successfully.");
   }
 
   void deleteTask(String projectName, String taskTitle) {
     final project = findProjectByName(projectName);
     project.tasks.removeWhere((task) => task.title == taskTitle);
-    saveProjectsToFile();
+    saveProjectsToApi();
     print("Task '$taskTitle' deleted from project '$projectName'.");
   }
 
@@ -113,7 +132,7 @@ class ProjectManager {
     try {
       final project = findProjectByName(projectName);
       projects.remove(project.id);
-      saveProjectsToFile();
+      saveProjectsToApi();
       print("Project '$projectName' deleted successfully.");
     } catch (e) {
       print("Error: Unable to delete project '$projectName'. Reason: $e");
@@ -188,7 +207,7 @@ class ProjectManager {
       final project = findProjectByName(projectName);
       final task = findTaskInProject(project, taskTitle);
       task.deadline = newDeadline;
-      saveProjectsToFile();
+      saveProjectsToApi();
       print("Deadline extended for task: ${task.title}");
     } catch (e) {
       print("Error: Unable to extend deadline. Reason: $e");
@@ -206,3 +225,5 @@ class ProjectManager {
     }
   }
 }
+
+

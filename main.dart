@@ -4,7 +4,7 @@ import 'task.dart';
 
 void main() async {
   final projectManager = ProjectManager();
-  await projectManager.loadProjectsFromFile();
+  // await projectManager.loadProjectsFromFile();
 
   while (true) {
     try {
@@ -393,7 +393,7 @@ void main() async {
           break;
           case '15':
            try {
-            await projectManager.saveProjectsToFile();
+            await projectManager.saveProjectsToApi();
             print("Projects saved successfully.");
           } catch (e) {
             print("Error: Unable to save projects. Reason: $e");
