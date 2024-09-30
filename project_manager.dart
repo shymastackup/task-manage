@@ -1,44 +1,35 @@
-import 'dart:convert';
-
 import 'api.dart';
 import 'project.dart';
 import 'task.dart';
 
 class ProjectManager {
   Map<String, Project> projects = {};
-  
-  
 
- Future<void> loadProjectsFromApi() async {
-  try {
-    final data = await Api.getProjects();
-    print('API Response: $data'); 
+  Future<void> loadProjectsFromApi() async {
+    try {
+      final List<dynamic> data = await Api.getProjects();
+      print('API Response: $data');
 
-    if (data.isNotEmpty) {
-     
-      List<dynamic> projectsJson = jsonDecode(data['projects'] as String) as List<dynamic>;
-
-      projects = {
-        for (var json in projectsJson)
-          Project.fromJson(json).id: Project.fromJson(json) 
-      };
-    } else {
-      print('No projects found. Starting with an empty list.');
+      if (data.isNotEmpty) {
+        projects = {
+          for (var json in data)
+            Project.fromJson(json).id: Project.fromJson(json)
+        };
+        print('Projects loaded successfully: $projects');
+      } else {
+        print('No projects found. Starting with an empty list.');
+        projects = {};
+      }
+    } catch (e) {
+      print('Error: Unable to load projects. Reason: $e');
     }
-  } catch (e) {
-    print('Error: Unable to load projects. Reason: $e');
   }
-}
-
-
-
-
 
   Future<void> saveProjectsToApi() async {
     try {
-      final projectsJson =
-          projects.values.map((project) => project.toJson()).toList();
-      await Api.saveProjects({'projects': projectsJson});
+      for (var project in projects.values) {
+        await Api.createProject(project.toJson());
+      }
       print('Projects saved successfully.');
     } catch (e) {
       print('Error: Unable to save projects. Reason: $e');
@@ -225,5 +216,3 @@ class ProjectManager {
     }
   }
 }
-
-
